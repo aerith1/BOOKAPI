@@ -1,10 +1,9 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, Boolean, DateTime
 from sqlalchemy.orm import declarative_base
-engine = create_engine('mysql+mysqlconnector://root:root@101.132.17.102:3306/cit')
+engine = create_engine('mysql+mysqlconnector://root:root@localhost:3306/cit')
 Base = declarative_base()
 
 class BorrowingModel(Base):
@@ -25,14 +24,32 @@ class LibraryModel(Base):
     average_score = Column(Float(precision=2), unique=False)
     amount_book = Column(Integer)
     Cover_link = Column(String(200), nullable=True)
-    
+
+class UserModel(Base):
+
+    __tablename__ = "User"
+    user_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_name = Column(String(50), nullable=False)
+    passwd = Column(String(20), unique=False, nullable=False)
 
 class ShelfModel(Base):
 
     __tablename__='Shelfs'
-    shelf_id = Column(String(30), primary_key=True, unique=True)
-    book_id = Column(Integer, ForeignKey('Library.book_id'), unique=True)
-    # user_id = Column(Integer, ForeignKey(''))
+    shelf_id = Column(String(30), primary_key=True)
+    book_id = Column(Integer, ForeignKey('Library.book_id'))
+    user_id = Column(Integer, ForeignKey('User.user_id'))
     borrowing_id = Column(String(20), ForeignKey('Borrowing.borrowing_id'))
 
+class LikeModel(Base):
+    __tablename__='LikeList'
+    like_id = Column(String(30), primary_key=True)
+    book_id = Column(Integer, ForeignKey('Library.book_id'))
+    user_id = Column(Integer, ForeignKey('User.user_id'))
+
+class ReviewsModel(Base):
+    __tablename__='Reviews'
+    review_id = Column(String(30), primary_key=True)
+    book_id = Column(Integer, ForeignKey('Library.book_id'))
+    user_id = Column(Integer, ForeignKey('User.user_id'))
+    reviews = Column(String(200))
 Base.metadata.create_all(engine)
