@@ -10,7 +10,7 @@ from db import db
 
 blp = Blueprint("Reviews", __name__, description="I like reviewing")
 @blp.route("/get_review/<int:book_id>")
-@blp.response(200, ReviewSchema)
+@blp.response(200, ReviewSchema(many=True))
 def get_all_like(book_id):
     likes = ReviewsModel.query.filter_by(book_id=book_id).all()
     return likes

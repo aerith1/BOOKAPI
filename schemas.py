@@ -30,8 +30,6 @@ class UserLoginSchema(Schema):
     passwd = fields.Str(required=True)
 
 class BorrowingSchema(Schema):
-    # __tablename__='Borrowing'
-    # borrowing_id = fields.Str(required=True)
     book_id = fields.Int(required=True)
     borrowing_time = fields.DateTime()
     returning_time = fields.DateTime()
