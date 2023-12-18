@@ -10,7 +10,12 @@ from db import db
 
 blp = Blueprint("books", __name__, description="Operations on books")
 
-@blp.route("/book/<string:book_id>")
+@blp.route("/book/<string:book_name>")
+@blp.response(200, BookSchema(many=True))
+def get(book_name):
+    return LibraryModel.query.filter_by(book_name=book_name).all()
+
+@blp.route("/book/<int:book_id>")
 class Book(MethodView):
     @blp.response(200, BookSchema)
     def get(self, book_id):
@@ -26,12 +31,13 @@ class Book(MethodView):
         db.session.commit()
         return {'message': 'Book deleted'}
     
+    
     @blp.arguments(UpdateBookSchema)
     @blp.response(200, BookSchema)
     def put(self, book_data, book_id):
         book = LibraryModel.query.get(book_id)
         if book:
-            book.name = book_data['book_name']
+            book.book_name = book_data['book_name']
             book.author = book_data['author']
             book.introduction = book_data['introduction']
             book.amount_book = book_data['amount_book']
