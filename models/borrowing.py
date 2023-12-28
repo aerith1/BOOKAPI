@@ -8,4 +8,5 @@ class BorrowingModel(db.Model):
     borrowing_id = db.Column(db.String(20), primary_key=True)
     borrowing_time = db.Column(db.DateTime)
     returning_time = db.Column(db.DateTime)
+    user_id=db.Column(db.Integer)
     if_return = db.Column(db.Boolean)

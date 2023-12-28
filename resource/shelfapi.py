@@ -16,26 +16,57 @@ blp = Blueprint("Shelves", __name__, description="Operations on shelves")
 def get(user_id):
     return ShelfModel.query.filter_by(user_id=user_id).all()
 
+
 @blp.route("/shelf/<int:user_id>/add_book")
 class AddBookToShelf(MethodView):
     @blp.arguments(BorrowingSchema)
     @blp.response(200, ShelfSchema)
     def post(self, borrowing_data, user_id):
-        shelf = ShelfModel.query.filter_by(user_id=user_id).first()
-
+        shelf_book = ShelfModel.query.filter_by(book_id=borrowing_data['book_id'], user_id=user_id).first()
         book = LibraryModel.query.get(borrowing_data['book_id'])
+        if shelf_book:
+            record = BorrowingModel.query.filter_by(borrowing_id=shelf_book.borrowing_id).first()
+            if (not record.if_return):
+                abort(401, message="Book alreay exits")
+            else:
+                new_borrowing_id = generate_uuid()
+                new_borrowing = BorrowingModel(
+                    borrowing_id=new_borrowing_id,
+                    borrowing_time=borrowing_data.get('borrowing_time'),
+                    returning_time=borrowing_data.get('returning_time'),
+                    user_id = user_id,
+                    if_return=borrowing_data.get('if_return', False),
+                )
+                LibraryModel.query.filter(LibraryModel.book_id == book.book_id).update({'amount_book': LibraryModel.amount_book-1})
+                if(LibraryModel.query.get(borrowing_data['book_id']).amount_book < 0):
+                    abort(405, message="There is no book left")
+                db.session.add(new_borrowing)
+                db.session.commit()
 
-        if book:
+                new_book = ShelfModel(
+                shelf_id=generate_uuid(),
+                book_id=borrowing_data['book_id'],
+                user_id=user_id,
+                borrowing_id=new_borrowing_id
+                )
+
+                db.session.add(new_book)
+                db.session.commit()
+
+            return new_book
+        elif book:
             new_borrowing_id = generate_uuid()
 
-            # 创建新的借阅记录
             new_borrowing = BorrowingModel(
                 borrowing_id=new_borrowing_id,
                 borrowing_time=borrowing_data.get('borrowing_time'),
                 returning_time=borrowing_data.get('returning_time'),
+                user_id = user_id,
                 if_return=borrowing_data.get('if_return', False),
             )
-
+            LibraryModel.query.filter(LibraryModel.book_id == book.book_id).update({'amount_book': LibraryModel.amount_book-1})
+            if(LibraryModel.query.get(borrowing_data['book_id']).amount_book < 0):
+                abort(405, message="There is no book left")
             db.session.add(new_borrowing)
             db.session.commit()
 

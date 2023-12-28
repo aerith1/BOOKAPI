@@ -16,14 +16,20 @@ class UserList(MethodView):
     @blp.arguments(UserSchema)
     @blp.response(201, UserSchema)
     def post(self, user_data):
-        user = UserModel(**user_data)
+        username = user_data.get('user_name')
+        password = user_data.get('passwd')
+        user = UserModel.query.filter_by(user_name=username).first()
+        if user:
+            abort(401, message=f"User {user.user_name} already exists")
+        new_user = UserModel(**user_data)
+
         try:
-            db.session.add(user)
+            db.session.add(new_user)
             db.session.commit()
         except SQLAlchemyError:
             abort(500, message="An error occurred while inserting the user.")
 
-        return user
+        return new_user
 
 @blp.route("/login")
 class Login(MethodView):
@@ -39,7 +45,7 @@ class Login(MethodView):
         user = UserModel.query.filter_by(user_name=username, passwd=password).first()
         if user:
             access_token = create_access_token(identity=username)
-            return {'access_token': access_token}, 200
+            return {'access_token': access_token, 'user_id': user.user_id}, 200
         else:
             abort(401, message="Invalid credentials")
 
