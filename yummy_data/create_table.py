@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, Boolean, DateTime
 from sqlalchemy.orm import declarative_base
 from datetime import datetime
-engine = create_engine('mysql+mysqlconnector://root:root@localhost:3306/cit')
+engine = create_engine('mysql+mysqlconnector://root:saber@localhost:3306/cit')
 Base = declarative_base()
 
 class BorrowingModel(Base):
